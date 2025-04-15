@@ -37,7 +37,3 @@ def get_full_user_input():
             print("Switching to text input.")
     return get_text_input()
 
-def main():
-    get_full_user_input()
-
-main()
