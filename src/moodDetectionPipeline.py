@@ -1,7 +1,7 @@
 from transformers import pipeline
 import re
 import speech_recognition as sr
-import moodInput
+
 
 # Load the emotion detection model
 emotion_classifier = pipeline(
@@ -56,8 +56,7 @@ def detect_emotion(text):
     score = result[0]['score']
     return emotion, score
 
-def detection_pipeline():
-    raw_input = moodInput.get_text_input()
+def detection_pipeline(raw_input):
     if raw_input:
         clean_input = preprocess_text(raw_input)
         emotion, score = detect_emotion(clean_input)
@@ -70,7 +69,3 @@ def detection_pipeline():
         else:
             print("\n🤖 I'm not sure how you're feeling, but here's something neutral.")
 
-def main():
-    detection_pipeline()
-
-main()

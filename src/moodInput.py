@@ -1,5 +1,6 @@
 import speech_recognition as sr
 
+
 def get_text_input():
     print("Tell me how you're feeling today:")
     user_input = input(">>> ")
