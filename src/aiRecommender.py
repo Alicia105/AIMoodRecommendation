@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import moodDetectionPipeline
+import moodInput
 import speech_recognition as sr
 import math
 
@@ -54,32 +55,48 @@ class aiRecommender():
         self.backgroundBasedOnText(user_input)
     
     def on_speech(self):
+
         recognizer = sr.Recognizer()
+
         with sr.Microphone() as source:
-            print("🎤 Please speak your feelings after the beep...")
-            recognizer.adjust_for_ambient_noise(source)
+
+            # Calibrate for ambient noise
+            self.output_label.config(text="🎤 Calibrating for background noise...")
+            recognizer.adjust_for_ambient_noise(source, duration=1)
+
+            # Prompt user
+            self.output_label.config(text="🎤 Please speak your feelings after the beep...")
+            moodInput.beep()
+            self.window.update()  # Refresh UI before listening
             print("Listening... (say how you're feeling)")
-            self.output_label.config(text=f"🎤 Please speak your feelings after the beep...")
-            self.output_label.config(text=f"Listening... (say how you're feeling)")
-            audio = recognizer.listen(source)
+          
+            try :
+            
+                # Listen with timeout
+                audio = recognizer.listen(source, timeout=5)
+
+            except sr.WaitTimeoutError:
+
+                self.output_label.config(text="⌛ Listening timed out. Try again.", fg="red")
+                print("⌛ Listening timed out.")
+                return
         try:
+            # Recognize speech
             text = recognizer.recognize_google(audio)
             print("🗣️ You said:", text)
+
             self.output_label.config(text=f"🗣️ You said:{text}")
             self.backgroundBasedOnText(text)
-
-            #clean_input = moodDetectionPipeline.preprocess_text(text)
-            #emotion, score = moodDetectionPipeline.detect_emotion(clean_input)
-            #self.output_label.config(text=f"Detected Emotion: {emotion} ({score:.2f})")
 
         except sr.UnknownValueError:
             self.output_label.config(text=f"😕 Sorry, I couldn't understand that.")
             print("😕 Sorry, I couldn't understand that.")
-            return None
+            return
         except sr.RequestError as e:
-            self.output_label.config(text=f"⚠️ Could not request results from Google Speech Recognition service; {0}".format(e), fg="red")
+            error_message = f"⚠️ Could not request results from Google Speech Recognition service; {e}"
+            self.output_label.config(text=error_message, fg="red")
             print("⚠️ Could not request results from Google Speech Recognition service; {0}".format(e))
-        return None
+        return
     
     def backgroundBasedOnText(self, text):
         clean_input = moodDetectionPipeline.preprocess_text(text)
@@ -186,11 +203,20 @@ class aiRecommender():
         height = self.window.winfo_height()
 
         wave_params = [
-            {"amplitude": 20, "frequency": 0.03, "phase_offset": 0,   "speed": 0.1, "color": "#90CAF9"},
+            {"amplitude": 20, "frequency": 0.03, "phase_offset": 0, "speed": 0.1, "color": "#90CAF9"},
             {"amplitude": 15, "frequency": 0.035, "phase_offset": 1, "speed": 0.07, "color": "#64B5F6"},
-            {"amplitude": 10, "frequency": 0.04, "phase_offset": 2,  "speed": 0.05, "color": "#42A5F5"},
+            {"amplitude": 10, "frequency": 0.04, "phase_offset": 2, "speed": 0.05, "color": "#42A5F5"},
         ]
 
+        # Get the background color of the canvas
+        background_color = self.window.cget("bg")
+        background_hex = tk_color_to_hex(self.window,background_color)
+        try:
+            bg_rgb =self.hex_to_rgb(background_hex)
+        except ValueError:
+            bg_rgb = (240, 244, 247)  # Default fallback
+
+        # Draw each wave with color blending
         for idx, wave in enumerate(wave_params):
             self.phases[idx] += wave["speed"]
             points = []
@@ -198,11 +224,18 @@ class aiRecommender():
                 y = height//2 + int(wave["amplitude"] * math.sin(wave["frequency"] * x + self.phases[idx] + wave["phase_offset"]))
                 points.extend([x, y])
 
-            self.canvas.create_line(points, fill=wave["color"], width=2, tags="wave", smooth=1)
+            # Convert the wave color and blend with background
+            wave_rgb = self.hex_to_rgb(wave["color"])
+            blended_rgb = blend_colors(bg_rgb, wave_rgb, alpha=0.5)  # You can change alpha to control blending
+            blended_color = self.rgb_to_hex(blended_rgb)
 
+            # Draw wave with blended color
+            self.canvas.create_line(points, fill=blended_color, width=2, tags="wave", smooth=1)
+
+        # Repeat the animation
         self.window.after(30, self.animate_waves)
 
-    def blend_colors(bg_rgb, fg_rgb, alpha=0.5):
+def blend_colors(bg_rgb, fg_rgb, alpha=0.5):
         """Blend foreground color into background color with alpha (0.0 to 1.0)."""
         return tuple(
             int(bg_rgb[i] * (1 - alpha) + fg_rgb[i] * alpha)

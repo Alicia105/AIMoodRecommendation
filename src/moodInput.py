@@ -1,4 +1,15 @@
 import speech_recognition as sr
+import platform
+import os
+
+def beep():
+    if platform.system() == "Windows":
+        import winsound
+        winsound.Beep(1000, 300)  # frequency, duration (ms)
+    elif platform.system() == "Darwin":  # macOS
+        os.system('afplay /System/Library/Sounds/Glass.aiff')
+    else:  # Linux
+        print('\a')  # fallback: terminal bell sound
 
 
 def get_text_input():
@@ -6,11 +17,11 @@ def get_text_input():
     user_input = input(">>> ")
     return user_input
 
-
 def get_speech_input():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
         print("🎤 Please speak your feelings after the beep...")
+        beep()
         recognizer.adjust_for_ambient_noise(source)
         print("Listening... (say how you're feeling)")
         audio = recognizer.listen(source)
@@ -38,3 +49,7 @@ def get_full_user_input():
             print("Switching to text input.")
     return get_text_input()
 
+def main():
+    get_speech_input()
+
+main()
