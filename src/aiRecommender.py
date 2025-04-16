@@ -34,8 +34,11 @@ class aiRecommender():
         
         self.window.update()  # Let Tkinter compute the window size
         self.draw_wave()
-        self.phase=0
-        self.animate_wave()
+        #self.phase=0
+        #self.animate_wave()
+
+        self.phases = [0, 0, 0]
+        self.animate_waves()
 
     def on_submit(self):
         user_input = self.entry.get("1.0", tk.END).strip()
@@ -175,6 +178,29 @@ class aiRecommender():
 
         self.canvas.create_line(points, fill="#90CAF9", width=3, tags="wave", smooth=1)
         self.window.after(30, self.animate_wave)  # call again after 30ms
+    
+    def animate_waves(self):
+        self.canvas.delete("wave")  # Clear previous waves
+
+        width = self.window.winfo_width()
+        height = self.window.winfo_height()
+
+        wave_params = [
+            {"amplitude": 20, "frequency": 0.03, "phase_offset": 0,   "speed": 0.1, "color": "#90CAF9"},
+            {"amplitude": 15, "frequency": 0.035, "phase_offset": 1, "speed": 0.07, "color": "#64B5F6"},
+            {"amplitude": 10, "frequency": 0.04, "phase_offset": 2,  "speed": 0.05, "color": "#42A5F5"},
+        ]
+
+        for idx, wave in enumerate(wave_params):
+            self.phases[idx] += wave["speed"]
+            points = []
+            for x in range(0, width, 5):
+                y = height//2 + int(wave["amplitude"] * math.sin(wave["frequency"] * x + self.phases[idx] + wave["phase_offset"]))
+                points.extend([x, y])
+
+            self.canvas.create_line(points, fill=wave["color"], width=2, tags="wave", smooth=1)
+
+        self.window.after(30, self.animate_waves)
 
     def blend_colors(bg_rgb, fg_rgb, alpha=0.5):
         """Blend foreground color into background color with alpha (0.0 to 1.0)."""
