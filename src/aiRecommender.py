@@ -11,12 +11,10 @@ class aiRecommender():
         self.window.title("Mood-Based Music Recommender")
 
         #Canvas for waves
-        #self.canvas = tk.Canvas(self.window, bg="#f0f4f7", highlightthickness=0)
-        #self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
-
-        # Bring widgets above the canvas
-        #self.canvas.lower()
-
+        self.canvas = tk.Canvas(self.window, bg="#f0f4f7", highlightthickness=0)
+        self.canvas.place(x=0, y=0, relwidth=1, relheight=1)
+        
+       
         self.label=tk.Label(self.window, text="Enter your mood / feeling:")
         self.label.pack(pady=10)
 
@@ -30,11 +28,14 @@ class aiRecommender():
         self.output_label.pack(pady=10)
 
         #To see waves
-        """for widget in self.window.winfo_children():
+        for widget in self.window.winfo_children():
             if widget != self.canvas:
-                widget.lift()"""
+                widget.lift()
         
-        #self.draw_wave()
+        self.window.update()  # Let Tkinter compute the window size
+        self.draw_wave()
+        self.phase=0
+        self.animate_wave()
 
     def on_submit(self):
         user_input = self.entry.get("1.0", tk.END).strip()
@@ -125,12 +126,55 @@ class aiRecommender():
                 for j in range(3)
             )
             hex_color = self.rgb_to_hex(current_rgb)
-            self.window.configure(bg=hex_color)
+            #self.window.configure(bg=hex_color)
+            self.canvas.configure(bg=hex_color)
             self.output_label.configure(bg=hex_color)
             self.label.configure(bg=hex_color)
-            self.window.after(delay, lambda: step(i + 1))
+            #self.window.after(delay, lambda: step(i + 1))
+            self.canvas.after(delay, lambda: step(i + 1))
 
         step(0)
+
+    def draw_wave(self):
+        width = self.window.winfo_width()
+        height = self.window.winfo_height()
+
+        if width <= 1 or height <= 1:
+            # wait until window is fully initialized
+            self.window.after(100, self.draw_wave)
+            return
+
+        self.canvas.delete("wave")  # Clear previous waves
+
+        wave_height = 40
+        wave_length = 100
+        num_points = width // 10
+
+        points1 = []
+        for x in range(num_points):
+            px = x * 10
+            py = int(height / 2 + wave_height * math.sin(2 * math.pi * px / wave_length))
+            points1.extend([px, py])
+
+        if len(points1) >= 4:
+            self.canvas.create_line(points1, fill="#64b5f6", width=3, tags="wave", smooth=1)
+
+    def animate_wave(self):
+        self.canvas.delete("wave")  # Clear previous frame
+
+        width = self.window.winfo_width()
+        height = self.window.winfo_height()
+        amplitude = 20
+        frequency = 0.05
+
+        self.phase += 0.1  # Animate by shifting phase
+        points = []
+        for x in range(0, width, 5):
+            y = height // 2 + int(amplitude * math.sin(frequency * x + self.phase))
+            points.extend([x, y])
+
+        self.canvas.create_line(points, fill="#90CAF9", width=3, tags="wave", smooth=1)
+        self.window.after(30, self.animate_wave)  # call again after 30ms
 
     def blend_colors(bg_rgb, fg_rgb, alpha=0.5):
         """Blend foreground color into background color with alpha (0.0 to 1.0)."""
@@ -147,7 +191,6 @@ def get_rgb_255(widget, color_name):
 def tk_color_to_hex(widget, color_name):
     r, g, b = widget.winfo_rgb(color_name)
     return "#{:02x}{:02x}{:02x}".format(r // 256, g // 256, b // 256)
-
 
 def main():
     # GUI setup
