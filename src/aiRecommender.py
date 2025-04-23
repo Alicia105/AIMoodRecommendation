@@ -6,6 +6,7 @@ import speech_recognition as sr
 import math
 import interaction
 
+
 class aiRecommender():
     def __init__(self, window):
         self.user_input=""
@@ -69,14 +70,17 @@ class aiRecommender():
 
             # Calibrate for ambient noise
             self.output_label.config(text="🎤 Calibrating for background noise...")
-            recognizer.adjust_for_ambient_noise(source, duration=1)
+            recognizer.adjust_for_ambient_noise(source, duration=2)
 
             # Prompt user
-            moodInput.beep()
             self.output_label.config(text="🎤 Please speak your feelings after the beep...")
+            moodInput.beep()
+            
+            self.window.after(100, lambda: self.output_label.config(text="🎧 Listening..."))
+
             self.window.update()  # Refresh UI before listening
             print("Listening... (say how you're feeling)")
-          
+            
             try :
                 # Listen with timeout
                 audio = recognizer.listen(source, timeout=8)
@@ -92,7 +96,9 @@ class aiRecommender():
             print("🗣️ You said:", text)
 
             self.output_label.config(text=f"🗣️ You said:{text}")
-            self.backgroundBasedOnText(text)
+            self.user_input=text
+            self.window.update()
+            self.backgroundBasedOnText()
 
         except sr.UnknownValueError:
             self.output_label.config(text=f"😕 Sorry, I couldn't understand that.")
@@ -126,19 +132,20 @@ class aiRecommender():
     def backgroundBasedOnText(self):
         clean_input = moodDetectionPipeline.preprocess_text(self.user_input)
         self.emotion, score = moodDetectionPipeline.detect_emotion(clean_input)
-
-        self.output_label.config(text=f"🎧 Detected Emotion: {self.emotion} ({score:.2f})")
-
-       
-        self.output_label.config(text=f"{self.emotion_response_map[self.emotion]["message"]}")
+        
+        self.output_label.config(text=f"🎧 Detected Emotion: {self.emotion} ({score:.2f})")        
+        self.window.update()
+        self.window.after(3000, lambda: self.output_label.config(text=f"{self.emotion_response_map[self.emotion]["message"]}"))
+        
         # Optional: change background based on emotion
         emotion_colors = {
-            "joy": "#FFF9C4",
-            "sadness": "#BBDEFB",
-            "anger": "#FFCDD2",
-            "love": "#F8BBD0",
-            "fear": "#D1C4E9",
-            "surprise": "#FFECB3"
+            "joy": "#FFF6A4",#fff6a4
+            "sadness": "#BBDEFB",#bbdefb
+            "anger": "#FFCCD2",#ffccd2
+            "neutral": "#C4FFD1",#c4ffd1
+            "fear": "#D1C4E9",#d1c4e9
+            "surprise": "#FFE4B6",#ffe4b6
+            "disgust":"DBE7A9"#dbe7a9
         }
         target_color = emotion_colors.get(self.emotion.lower(), "#f0f4f7")
         print(target_color)

@@ -22,16 +22,12 @@ def emotion_responses_map():
             "mood": "sad"
         },
         "anger": {
-            "message": "Sounds like it's been a rough time. Maybe some chill tracks will help cool things down.",
+            "message": "Sounds like it's been a rough time. Let's play something energetic to pass your nerves.",
             "mood": "angry"
         },
         "fear": {
-            "message": "It's okay to be anxious or scared. Let me play something calming for you.",
+            "message": "It's okay to feel anxious or scared. Let's try something matching your mood to exteriorize everything.",
             "mood": "fearful"
-        },
-        "love": {
-            "message": "Love is in the air! Here's a romantic tune for you.",
-            "mood": "romantic"
         },
         "surprise": {
             "message": "Whoa! Sounds exciting. Let's keep the energy flowing.",
@@ -39,6 +35,10 @@ def emotion_responses_map():
         },
         "disgust": {
             "message": "Yikes. Let’s distract you with something relaxing and clean.",
+            "mood": "disgust"
+        },
+        "neutral": {
+            "message": "Sounds like today is a chill day ! Let me play something for you ! I got this.",
             "mood": "neutral"
         }
     }
