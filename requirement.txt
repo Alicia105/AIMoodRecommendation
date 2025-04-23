@@ -1,0 +1,7 @@
+transformers==4.39.3
+torch>=2.1.0
+speechrecognition==3.10.1
+pyaudio==0.2.13
+spotipy==2.23.0
+requests>=2.31.0
+python-dotenv>=1.0.0

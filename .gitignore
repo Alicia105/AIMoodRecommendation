@@ -8,3 +8,4 @@ data/spotify_songs_enhanced.csv
 app.py
 src/__pycache__/interaction.cpython-312.pyc
 
+.env
