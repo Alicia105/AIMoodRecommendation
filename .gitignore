@@ -4,3 +4,7 @@ data/readme.md
 src/__pycache__/moodInput.cpython-312.pyc
 src/__pycache__/moodDetectionPipeline.cpython-312.pyc
 src/a.py
+data/spotify_songs_enhanced.csv
+app.py
+src/__pycache__/interaction.cpython-312.pyc
+

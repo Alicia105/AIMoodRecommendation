@@ -11,7 +11,6 @@ def beep():
     else:  # Linux
         print('\a')  # fallback: terminal bell sound
 
-
 def get_text_input():
     print("Tell me how you're feeling today:")
     user_input = input(">>> ")
@@ -37,7 +36,6 @@ def get_speech_input():
         print("⚠️ Could not request results from Google Speech Recognition service; {0}".format(e))
         return None
 
-
 def get_full_user_input():
     print("\nWould you like to (1) Type or (2) Speak your mood?")
     choice = input("Enter 1 or 2: ").strip()
@@ -48,8 +46,3 @@ def get_full_user_input():
         else:
             print("Switching to text input.")
     return get_text_input()
-
-def main():
-    get_speech_input()
-
-main()

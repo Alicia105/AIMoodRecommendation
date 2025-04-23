@@ -4,10 +4,14 @@ import moodDetectionPipeline
 import moodInput
 import speech_recognition as sr
 import math
-
+import interaction
 
 class aiRecommender():
     def __init__(self, window):
+        self.user_input=""
+        self.emotion=""
+        self.emotion_response_map=moodDetectionPipeline.emotion_responses_map()
+
         self.window = window
         self.window.title("Mood-Based Music Recommender")
 
@@ -24,7 +28,9 @@ class aiRecommender():
 
         tk.Button(self.window, text="Detect Mood", command=self.on_submit).pack(pady=10)
         tk.Button(self.window, text="Speech Input", command=self.on_speech).pack(pady=10)
-
+        tk.Button(self.window, text="Play music", command=self.on_play_music_mood).pack(pady=10)
+        tk.Button(self.window, text="Generate playlist", command=self.on_generate_music).pack(pady=10)
+        
         self.output_label = tk.Label(self.window, text="", font=("Arial", 14), fg="blue")
         self.output_label.pack(pady=10)
 
@@ -42,8 +48,9 @@ class aiRecommender():
         self.animate_waves()
 
     def on_submit(self):
-        user_input = self.entry.get("1.0", tk.END).strip()
-        if not user_input:
+        self.user_input = self.entry.get("1.0", tk.END).strip()
+        #self.user_input=user_input
+        if not self.user_input:
             messagebox.showwarning("Warning", "Please enter something!")
             return
         
@@ -52,7 +59,7 @@ class aiRecommender():
 
         #self.output_label.config(text=f"Detected Emotion: {emotion} ({score:.2f})")
         #print(f"Detected Emotion: {emotion} ({score:.2f})")
-        self.backgroundBasedOnText(user_input)
+        self.backgroundBasedOnText()
     
     def on_speech(self):
 
@@ -65,15 +72,14 @@ class aiRecommender():
             recognizer.adjust_for_ambient_noise(source, duration=1)
 
             # Prompt user
-            self.output_label.config(text="🎤 Please speak your feelings after the beep...")
             moodInput.beep()
+            self.output_label.config(text="🎤 Please speak your feelings after the beep...")
             self.window.update()  # Refresh UI before listening
             print("Listening... (say how you're feeling)")
           
             try :
-            
                 # Listen with timeout
-                audio = recognizer.listen(source, timeout=5)
+                audio = recognizer.listen(source, timeout=8)
 
             except sr.WaitTimeoutError:
 
@@ -97,13 +103,34 @@ class aiRecommender():
             self.output_label.config(text=error_message, fg="red")
             print("⚠️ Could not request results from Google Speech Recognition service; {0}".format(e))
         return
-    
-    def backgroundBasedOnText(self, text):
-        clean_input = moodDetectionPipeline.preprocess_text(text)
-        emotion, score = moodDetectionPipeline.detect_emotion(clean_input)
+        
+    def on_play_music_mood(self):
+        if not self.user_input:
+            messagebox.showwarning("Warning", "Please enter something first!")
+            return
+        else :
+            #pipeline to play 5 songs
+            messagebox.showwarning("Success", f"We generated a preview of 5 songs matching your current mood : {self.emotion} ! Enjoy !\n You can generate a playlist too if you want ")
+            return
+        
+    def on_generate_music(self):
+        if not self.user_input:
+            messagebox.showwarning("Warning", "Please enter something first!")
+            return
+        else :
+            #pipeline to create playlist with spotify api
+            name=interaction.generate_playlist(self.emotion)
+            messagebox.showwarning("Success", f"Your playlist {name} based on {self.emotion} was successfully created !\n You can listen to it on your Spotify app")
+            return
 
-        self.output_label.config(text=f"🎧 Detected Emotion: {emotion} ({score:.2f})")
+    def backgroundBasedOnText(self):
+        clean_input = moodDetectionPipeline.preprocess_text(self.user_input)
+        self.emotion, score = moodDetectionPipeline.detect_emotion(clean_input)
 
+        self.output_label.config(text=f"🎧 Detected Emotion: {self.emotion} ({score:.2f})")
+
+       
+        self.output_label.config(text=f"{self.emotion_response_map[self.emotion]["message"]}")
         # Optional: change background based on emotion
         emotion_colors = {
             "joy": "#FFF9C4",
@@ -113,7 +140,7 @@ class aiRecommender():
             "fear": "#D1C4E9",
             "surprise": "#FFECB3"
         }
-        target_color = emotion_colors.get(emotion.lower(), "#f0f4f7")
+        target_color = emotion_colors.get(self.emotion.lower(), "#f0f4f7")
         print(target_color)
 
         current_color_name = self.window.cget("bg")  # e.g., "SystemButtonFace"
