@@ -1,4 +1,4 @@
-from datetime import datetime,date
+from datetime import date
 
 def mood_Mapping(emotion):
     if emotion=="happy" :
