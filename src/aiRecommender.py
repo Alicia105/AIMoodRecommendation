@@ -4,11 +4,12 @@ import moodDetectionPipeline
 import moodInput
 import speech_recognition as sr
 import math
-import interaction
+import spotifyAPI
 
 
 class aiRecommender():
     def __init__(self, window):
+        self.generated_tracks={"emotion":"", "tracks_id":[]}
         self.user_input=""
         self.emotion=""
         self.emotion_response_map=moodDetectionPipeline.emotion_responses_map()
@@ -125,7 +126,7 @@ class aiRecommender():
             return
         else :
             #pipeline to create playlist with spotify api
-            name=interaction.generate_playlist(self.emotion)
+            name=spotifyAPI.generate_playlist(self.emotion)
             messagebox.showwarning("Success", f"Your playlist {name} based on {self.emotion} was successfully created !\n You can listen to it on your Spotify app")
             return
 

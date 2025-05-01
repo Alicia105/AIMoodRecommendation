@@ -12,3 +12,6 @@ load.py
 src/interaction.py
 src/map.py
 src/interaction.py
+src/n.py
+src/.cache
+src/__pycache__/mapping.cpython-312.pyc
