@@ -126,13 +126,22 @@ class aiRecommender():
             return
         else :
             #pipeline to create playlist with spotify api
-            name=spotifyAPI.generate_playlist(self.emotion)
+            name,playlist_id=spotifyAPI.generate_playlist(self.emotion)
+            spotifyAPI.add_tracks_to_playlist(playlist_id, self.generated_tracks["tracks_id"])
             messagebox.showwarning("Success", f"Your playlist {name} based on {self.emotion} was successfully created !\n You can listen to it on your Spotify app")
             return
 
     def backgroundBasedOnText(self):
         clean_input = moodDetectionPipeline.preprocess_text(self.user_input)
         self.emotion, score = moodDetectionPipeline.detect_emotion(clean_input)
+        self.generated_tracks["emotion"]=self.emotion
+        
+        #Generate a list of songs based on the mood
+        if len(self.generated_tracks["tracks_id"])!=0:
+            self.generated_tracks["tracks_id"].clear()
+
+        recs=spotifyAPI.giveRecommendations(self.emotion)
+        self.generated_tracks["tracks_id"]=recs
         
         self.output_label.config(text=f"🎧 Detected Emotion: {self.emotion} ({score:.2f})")        
         self.window.update()
@@ -292,5 +301,5 @@ def main():
     recommender=aiRecommender(root)
     root.mainloop()
 
-if __name__ == "__main__":
-    main()
+"""if __name__ == "__main__":
+    main()"""

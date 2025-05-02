@@ -26,9 +26,6 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 me = sp.me()
 print(f"Logged in as: {me['display_name']}")
 
-# Get available genres
-#genres = sp.recommendation_genre_seeds()
-#print(genres['genres'])
 
 def giveRecommendations(emotion):
     global sp
@@ -113,10 +110,10 @@ def generate_playlist(emotion):
     recs=giveRecommendations(emotion)
 
     #send request to make playlist
-    create_playlist(playlist_name,recs)
+    playlist_id=create_playlist(playlist_name,recs)
 
     #return playlist_name for logs on GUI 
-    return playlist_name   
+    return playlist_name, playlist_id  
 
 def create_playlist(name,recommendations):
     global sp
@@ -131,6 +128,8 @@ def create_playlist(name,recommendations):
 
     sp.playlist_add_items(playlist_id=playlist['id'], items=tracks_id)
     print(f"Playlist created: {playlist['external_urls']['spotify']}")
+
+    return playlist['id']
 
 #Add tracks to a playlist
 def add_tracks_to_playlist(playlist_id, track_ids):
