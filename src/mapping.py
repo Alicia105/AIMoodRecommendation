@@ -1,3 +1,5 @@
+import json
+
 """high >=0.6; 0.3<=mid<0.6; low<0.3"""
 
 #Mapping based on distillRoberTA text emotion_classifier
@@ -121,28 +123,60 @@ def detect_song_emotion(energy,tempo,loudness,danceability,speechiness,liveness,
 
 def map_seed_genres_to_emotion(emotion):
   emotion_genre_map = {
-    'anger': ['metal', 'heavy-metal', 'metalcore', 'death-metal', 'black-metal',
-              'hardcore', 'hard-rock', 'punk', 'punk-rock', 'grindcore', 'industrial', 'hardstyle', 'emo'],
-    
-    'fear': ['minimal-techno', 'ambient', 'industrial', 'trip-hop', 'black-metal',
-             'grindcore', 'soundtracks', 'goth'],
-    
-    'joy': ['pop', 'dance', 'edm', 'house', 'disco', 'funk', 'electro', 'latino',
-            'samba', 'salsa', 'reggae', 'reggaeton', 'k-pop', 'j-pop', 'summer', 'happy', 'party', 'brazil'],
-    
-    'sadness': ['acoustic', 'singer-songwriter', 'indie', 'indie-pop', 'blues', 'classical',
-                'ambient', 'sad', 'piano', 'folk', 'emo', 'rainy-day'],
-    
-    'disgust': ['grindcore', 'death-metal', 'hardcore', 'black-metal', 'industrial'],
-    
-    'surprise': ['jazz', 'progressive-house', 'psych-rock', 'trance', 'techno',
-                 'alternative', 'experimental', 'soundtracks', 'anime'],
-    
-    'neutral': ['chill', 'ambient', 'classical', 'deep-house', 'minimal-techno',
-                'study', 'sleep', 'new-age', 'world-music', 'bossanova']
+    "anger": [
+        "alt-rock", "black-metal", "death-metal", "grindcore", "hard-rock", "hardcore", 
+        "hardstyle", "heavy-metal", "hip-hop", "industrial", "metal", "metal-misc", 
+        "metalcore", "punk", "punk-rock", "rock"
+    ],
+    "fear": [
+        "industrial", "metal", "metalcore", "post-dubstep", "techno", "trance"
+    ],
+    "joy": [
+        "afrobeat", "anime", "bluegrass", "bossanova", "brazil", "cantopop", "chicago-house", 
+        "children", "club", "comedy", "dance", "dancehall", "deep-house", "disco", "disney", 
+        "forro", "funk", "gospel", "groove", "happy", "holidays", "honky-tonk", "house", "indie-pop", 
+        "j-dance", "j-idol", "j-pop", "j-rock", "k-pop", "kids", "latin", "latino", "mandopop", "pagode", 
+        "party", "pop", "pop-film", "power-pop", "progressive-house", "r-n-b", "reggae", "reggaeton", 
+        "road-trip", "rock-n-roll", "rockabilly", "romance", "salsa", "samba", "sertanejo", "show-tunes", 
+        "ska", "soul", "summer", "synth-pop", "tango", "work-out"
+    ],
+    "sadness": [
+        "blues", "country", "emo", "folk", "goth", "rainy-day", "opera", "singer-songwriter", "sad"
+    ],
+    "disgust": [
+        "grindcore", "hardcore", "death-metal", "metal", "black-metal", "punk", "industrial"
+    ],
+    "surprise": [
+        "breakbeat", "detroit-techno", "idm", "drum-and-bass", "dubstep", "new-release", 
+        "psych-rock", "techno", "trance", "trip-hop"
+    ],
+    "neutral": [
+        "acoustic", "alternative", "ambient", "classical", "chill", "electronic", "indian", "indie", 
+        "guitar", "jazz", "malay", "minimal-techno", "movies", "mpb", "new-age", "philippines-opm", 
+        "piano", "post-dubstep", "progressive-house", "trip-hop", "turkish", "world-music"
+    ]
   }
+
   return emotion_genre_map[emotion]
 
+def mapping_integrity(emotion):
+  with open('spotify_genres_seeds.json', 'r') as f:
+    genre_data = json.load(f)
+
+    valid_genres = genre_data['genres']
+    #print(valid_genres)
+
+    g=map_seed_genres_to_emotion(emotion)
+
+    # Now compare the genres and get the differences
+    differences = []
+
+    for genre in g:
+        if genre not in valid_genres and len(valid_genres)!=0:
+            differences.append(genre)
+        
+    # Print the differences
+    print(differences)
 
 
 
