@@ -9,7 +9,8 @@ import spotifyAPI
 
 class aiRecommender():
     def __init__(self, window):
-        self.generated_tracks={"emotion":"", "tracks_id":[]}
+        self.generated_tracks={"emotion":"", "tracks":[]}
+        self.generated_playlist=""
         self.user_input=""
         self.emotion=""
         self.emotion_response_map=moodDetectionPipeline.emotion_responses_map()
@@ -117,6 +118,7 @@ class aiRecommender():
             return
         else :
             #pipeline to play 5 songs
+            spotifyAPI.start_player(self.generated_tracks['tracks'])
             messagebox.showwarning("Success", f"We generated a preview of 5 songs matching your current mood : {self.emotion} ! Enjoy !\n You can generate a playlist too if you want ")
             return
         
@@ -126,8 +128,9 @@ class aiRecommender():
             return
         else :
             #pipeline to create playlist with spotify api
-            name,playlist_id=spotifyAPI.generate_playlist(self.emotion)
-            spotifyAPI.add_tracks_to_playlist(playlist_id, self.generated_tracks["tracks_id"])
+            name,playlist_id,playlist_uri=spotifyAPI.generate_playlist(self.emotion,self.generated_tracks['tracks'])
+            self.generated_playlist=playlist_id
+            spotifyAPI.play_playlist(playlist_uri)
             messagebox.showwarning("Success", f"Your playlist {name} based on {self.emotion} was successfully created !\n You can listen to it on your Spotify app")
             return
 
@@ -137,11 +140,12 @@ class aiRecommender():
         self.generated_tracks["emotion"]=self.emotion
         
         #Generate a list of songs based on the mood
-        if len(self.generated_tracks["tracks_id"])!=0:
-            self.generated_tracks["tracks_id"].clear()
+        if len(self.generated_tracks["tracks"])!=0:
+            self.generated_tracks["tracks"].clear()
 
         recs=spotifyAPI.giveRecommendations(self.emotion)
-        self.generated_tracks["tracks_id"]=recs
+        results=spotifyAPI.clean_tracks(recs)
+        self.generated_tracks["tracks"]=results
         
         self.output_label.config(text=f"🎧 Detected Emotion: {self.emotion} ({score:.2f})")        
         self.window.update()

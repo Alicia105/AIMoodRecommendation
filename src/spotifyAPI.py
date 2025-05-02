@@ -87,8 +87,7 @@ def giveRecommendations(emotion):
             max_danceability=max_danceability,
             min_loudness=min_loudness,
             max_loudness=max_loudness,
-            limit=10,
-            market='FR'
+            limit=10
         )
    
     elif  emotion=="fear":
@@ -110,8 +109,7 @@ def giveRecommendations(emotion):
             max_acousticness=max_acousticness,
             min_instrumentalness=min_instrumentalness,
             max_instrumentalness=max_instrumentalness,
-            limit=10,
-            market='FR'
+            limit=10
         )
 
     else :
@@ -120,17 +118,17 @@ def giveRecommendations(emotion):
         min_arousal=charac[3]
         max_arousal=charac[4]
         recommendations = sp.recommendations(
-            seed_genres=['pop'],
-            #min_valence=min_valence,
+            seed_genres=seed_genres,
+            min_valence=min_valence,
             #max_valence=max_valence,
-            #min_energy=min_arousal,
+            min_energy=min_arousal,
             #max_energy=max_arousal,
             limit=1
         )
     return recommendations
 
-#to fix
-def generate_playlist(emotion):
+#Generate a playlist, its name and uri
+def generate_playlist(emotion,results):
     today = date.today()
     print("Today's date:", today)
 
@@ -138,14 +136,11 @@ def generate_playlist(emotion):
     print("Current date =",day)
     playlist_name=emotion.capitalize()+'-'+day
 
-    #get mood mapping parameters---to fix
-    recs=giveRecommendations(emotion)
-
     #send request to make playlist
-    playlist_id=create_playlist(playlist_name,recs)
+    playlist_id,playlist_uri=create_playlist(playlist_name,results)
 
     #return playlist_name for logs on GUI 
-    return playlist_name, playlist_id  
+    return playlist_name, playlist_id, playlist_uri
 
 #Create a playlist--good
 def create_playlist(name,recommendations):
@@ -163,7 +158,7 @@ def create_playlist(name,recommendations):
     sp.playlist_add_items(playlist_id=playlist['id'], items=tracks_id)
     print(f"Playlist created: {playlist['external_urls']['spotify']}")
 
-    return playlist['id']
+    return playlist['id'],playlist['owner']['uri']
 
 #Add tracks to a playlist(track_ids is a list)--good
 def add_tracks_to_playlist(playlist_id, track_ids):
@@ -187,7 +182,7 @@ def add_to_queue(track_uri):
     print("Track added to queue.")
 
 #Start playback / set current song--good
-def start_playback(track_uri, device_id=None):
+def to_start_playback(track_uri, device_id=None):
     global sp
     check_and_refresh_token()
     sp.start_playback(uris=[track_uri], device_id=device_id)
@@ -224,6 +219,7 @@ def get_devices():
         print(f"Name: {device['name']}, ID: {device['id']}, Type: {device['type']}, Active: {device['is_active']}")
     return devices['devices']
 
+#to fix
 def get_available_genre_seeds(sp):
     """
     Fetch available genre seeds from the Spotify Web API using Spotipy.
@@ -263,6 +259,56 @@ def get_top_tracks():
         })
     
     return top_tracks
+
+#store tracks as an easilly treatable format for our main recommender loop
+def clean_tracks(results):
+    # Fetch the top 10 tracks of the current user
+    #results = sp.current_user_top_tracks(limit=10, time_range='medium_term')  # You can change time_range to 'short_term' or 'long_term'
+    #
+
+    #result is supposed to be the return value of the re
+    all_tracks = []
+    for idx, item in enumerate(results['items']):
+        all_tracks.append({
+            'rank': idx + 1,
+            'track_id':item['id'],
+            'track_name': item['name'],
+            'artist_name': item['artists'][0]['name'],
+            'album_name': item['album']['name'],
+            'track_uri': item['uri'],
+            'track_url': item['external_urls']['spotify'],
+            'track_image': item['album']['images'][0]['url']  # You can access album artwork here
+        })
+    
+    return all_tracks
+
+def start_player(all_tracks):
+    d=get_devices()
+    if len(d)==1:
+        device_id=d[0]['id']
+    else :
+        for device in d:
+            if device['is_active']:
+                device_id=device['id']
+                break
+        
+    track_uris=[]
+    for track in all_tracks:
+        track_uris.append(track['track_uri'])
+        add_to_queue(track['track_uri'])
+
+    to_start_playback(track_uris[0], device_id=device_id)    
+
+def play_playlist(playlist_uri):
+    d=get_devices()
+    if len(d)==1:
+        device_id=d[0]['id']
+    else :
+        for device in d:
+            if device['is_active']:
+                device_id=device['id']
+                break
+    sp.start_playback(device_id=device_id, context_uri=playlist_uri)
 
 if __name__ == "__main__":
     d=get_devices()
