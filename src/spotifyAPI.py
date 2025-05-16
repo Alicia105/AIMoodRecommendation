@@ -220,7 +220,8 @@ def get_devices():
     return devices['devices']
 
 #to fix
-def get_available_genre_seeds(sp):
+def get_available_genre_seeds():
+    global sp
     """
     Fetch available genre seeds from the Spotify Web API using Spotipy.
     This bypasses the deprecated sp.recommendation_genre_seeds() method.
